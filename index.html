@@ -1,41 +1,94 @@
-         <h1>欢迎来到互联网底层 </h1>
-       <h1 id="h">顶级打炮王 QQ970004496</h1>
-  <script>     
-  
-  h.style.color="red"
-       
-  </script>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>罗高校园表白墙</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        body { background: #f5f7fa; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; color: #e74c3c; margin-bottom: 30px; }
+        .submit-box { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        textarea { height: 120px; resize: none; }
+        button { width: 100%; padding: 12px; background: #e74c3c; color: white; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #c0392b; }
+        .post-list { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .post-item { padding: 15px; border-bottom: 1px solid #eee; margin-bottom: 15px; }
+        .post-item:last-child { border-bottom: none; margin-bottom: 0; }
+        .post-title { color: #e74c3c; font-size: 18px; margin-bottom: 8px; }
+        .post-content { color: #555; line-height: 1.6; }
+        .post-time { color: #999; font-size: 14px; margin-top: 10px; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💌 罗高校园表白墙</h1>
+        
+        <!-- 投稿表单 -->
+        <div class="submit-box">
+            <div class="form-group">
+                <label for="target">表白对象（年级+班级+昵称）</label>
+                <input type="text" id="target" placeholder="例：91级理科 小李同学" required>
+            </div>
+            <div class="form-group">
+                <label for="content">表白内容</label>
+                <textarea id="content" placeholder="想说的话...（文明用语，禁止隐私信息）" required></textarea>
+            </div>
+            <button onclick="submitPost()">提交表白</button>
+        </div>
+        
+        <!-- 表白列表 -->
+        <div class="post-list" id="postList">
+            <!-- 表白内容会通过JS动态添加 -->
+            <div class="post-item">
+                <div class="post-title">致 13级文科张峰同学</div>
+                <div class="post-content">图书馆三楼靠窗的位置，总能看到你认真看书的样子，你的温柔和努力真的很吸引人～ 希望有机会能认识你！</div>
+                <div class="post-time">2025-05-20 14:30</div>
+            </div>
+        </div>
+    </div>
 
-<h1>91暗网一号头牌QQ 445955871  全国可飞</h1>
+    <script>
+        // 提交表白
+        function submitPost() {
+            const target = document.getElementById('target').value.trim();
+            const content = document.getElementById('content').value.trim();
+            
+            if (!target || !content) {
+                alert('请填写完整信息！');
+                return;
+            }
+            
+            // 获取当前时间
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            
+            // 创建新表白项
+            const postItem = document.createElement('div');
+            postItem.className = 'post-item';
+            postItem.innerHTML = `
+                <div class="post-title">致 ${target}</div>
+                <div class="post-content">${content}</div>
+                <div class="post-time">${timeStr}</div>
+            `;
+            
+            // 添加到列表顶部
+            const postList = document.getElementById('postList');
+            postList.insertBefore(postItem, postList.firstChild);
+            
+            // 清空表单
+            document.getElementById('target').value = '';
+            document.getElementById('content').value = '';
+            
+            alert('表白提交成功！');
+        }
 
-
-
-
-
-
-<h1>91暗网二号头牌QQ1521672201  仅限同城</h1>
-
-
-
-
-
-<script>
-
-
-
-
-let a=prompt("请输入你的年龄")
-if(a>=18){
-  alert("成年人也要节制")
-}else{
-  alert("未成年人离刻离开，本站受大英帝国保护")
-}
-</script>
-
-
-
-<script>
-
-alert("欢迎进入暗网")
-alert("选择你的头牌")
-</script>
+        // 本地存储功能（可选，刷新页面不丢失）
+        // 如需添加，可留言告知，我会补充 localStorage 逻辑
+    </script>
+</body>
+</html>
