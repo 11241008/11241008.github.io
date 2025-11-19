@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>密码保护表白墙</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f5fafe; font-family: 'Arial', sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; color: #2d3748; margin: 30px 0; }
+        .form-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #4a5568; font-weight: 500; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; resize: none; }
+        input:focus, textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,0.1); }
+        button { background: #4299e1; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #3182ce; }
+        .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); position: relative; }
+        .card h3 { color: #2d3748; margin-bottom: 10px; font-size: 18px; }
+        .card p { color: #4a5568; line-height: 1.6; margin-bottom: 15px; }
+        .card .time { color: #718096; font-size: 14px; position: absolute; bottom: 15px; right: 20px; }
+        .delete-btn { position: absolute; top: 15px; right: 15px; background: #fef2f2; color: #dc2626; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .password-tip { font-size: 14px; color: #718096; margin-top: 5px; }
+    </style>
+    <!-- 引入CryptoJS用于AES加密 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>💌 白粟搭建的罗高表白墙(QQ1633934531)</h1>
+        
+        <div class="form-box">
+            <div class="form-group">
+                <label for="sender">你的名字</label>
+                <input type="text" id="sender" placeholder="留下你的昵称（可选）" />
+            </div>
+            <div class="form-group">
+                <label for="receiver">表白对象</label>
+                <input type="text" id="receiver" placeholder="写给谁？[年级班级]（必填）" required />
+            </div>
+            <div class="form-group">
+                <label for="content">表白内容</label>
+                <textarea id="content" rows="4" placeholder="说出你的心意～（必填）" required ></textarea>
+            </div>
+            <div class="form-group">
+                <label for="notePwd">删除密码（必填，用于删除自己的表白）</label>
+                <input type="password" id="notePwd" placeholder="设置6-16位密码" required />
+                <div class="password-tip">请牢记密码，删除时需验证</div>
+            </div>
+            <button id="submitBtn">发布表白</button>
+        </div>
+        
+        <div class="wall" id="wall"></div>
+    </div>
+
+    <script>
+        // 全局加密密钥（可自行修改，增强安全性）
+        const GLOBAL_SECRET_KEY = 'loveWall_2025_secure_key';
+        
+        // 加密函数
+        function encryptData(data) {
+            return CryptoJS.AES.encrypt(JSON.stringify(data), GLOBAL_SECRET_KEY).toString();
+        }
+        
+        // 解密函数
+        function decryptData(encryptedData) {
+            try {
+                const bytes = CryptoJS.AES.decrypt(encryptedData, GLOBAL_SECRET_KEY);
+                return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+            } catch (e) {
+                console.error('解密失败', e);
+                return [];
+            }
+        }
+
+        // 密码哈希处理（不可逆，避免存储明文密码）
+        function hashPassword(password) {
+            return CryptoJS.SHA256(password + GLOBAL_SECRET_KEY).toString();
+        }
+
+        // 初始化：从localStorage读取并解密表白数据
+        let loveNotes = decryptData(localStorage.getItem('secureLoveWall')) || [];
+        
+        // DOM元素
+        const submitBtn = document.getElementById('submitBtn');
+        const wall = document.getElementById('wall');
+        const senderInput = document.getElementById('sender');
+        const receiverInput = document.getElementById('receiver');
+        const contentInput = document.getElementById('content');
+        const notePwdInput = document.getElementById('notePwd');
+        
+        // 渲染表白卡片
+        function renderNotes() {
+            wall.innerHTML = '';
+            loveNotes.forEach((note, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <button class="delete-btn" data-index="${index}">×</button>
+                    <h3>致 ${note.receiver}</h3>
+                    <p>${note.content}</p>
+                    <div class="time">${note.sender || '匿名'} · ${note.time}</div>
+                `;
+                wall.appendChild(card);
+            });
+        }
+        
+        // 提交表白
+        submitBtn.addEventListener('click', () => {
+            const sender = senderInput.value.trim();
+            const receiver = receiverInput.value.trim();
+            const content = contentInput.value.trim();
+            const password = notePwdInput.value.trim();
+            
+            if (!receiver || !content) {
+                alert('表白对象和内容不能为空哦～');
+                return;
+            }
+            if (password.length < 6 || password.length > 16) {
+                alert('密码请设置6-16位哦～');
+                return;
+            }
+            
+            // 创建表白对象（存储密码哈希值）
+            const newNote = {
+                sender,
+                receiver,
+                content,
+                time: new Date().toLocaleString(),
+                pwdHash: hashPassword(password)
+            };
+            
+            loveNotes.unshift(newNote);
+            // 加密后存入localStorage
+            localStorage.setItem('secureLoveWall', encryptData(loveNotes));
+            
+            // 重置表单并重新渲染
+            [senderInput, receiverInput, contentInput, notePwdInput].forEach(el => el.value = '');
+            renderNotes();
+        });
+        
+        // 删除表白（密码验证）
+        wall.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const index = e.target.dataset.index;
+                const targetNote = loveNotes[index];
+                const inputPwd = prompt('请输入删除密码：');
+                
+                if (!inputPwd) return;
+                
+                // 验证密码哈希值
+                if (hashPassword(inputPwd) === targetNote.pwdHash) {
+                    loveNotes.splice(index, 1);
+                    localStorage.setItem('secureLoveWall', encryptData(loveNotes));
+                    renderNotes();
+                    alert('删除成功！');
+                } else {
+                    alert('密码错误，无法删除！');
+                }
+            }
+        });
+        
+        // 页面加载时渲染
+        renderNotes();
+    </script>
+</body>
+</html>
